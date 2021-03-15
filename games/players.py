@@ -1,5 +1,4 @@
 import numpy as np
-import pymc3 as pm
 
 class Player(object):
     """
@@ -93,7 +92,7 @@ class AdversarialPlayer(object):
         Resets the agent's memory to an initial state.
         """
         self._cumulative_estimates[:] = self.prior
-        self.action_attempts[:] = 1
+        self.action_attempts[:] = 0
         self.last_action = None
         self.last_op_action = None
         self.t = 0

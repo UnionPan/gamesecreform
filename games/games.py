@@ -1,5 +1,4 @@
 import numpy as np
-import pymc3 as pm
 
 #from scipy.optimize import linprog
 import matplotlib.pyplot as plt

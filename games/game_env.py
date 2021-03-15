@@ -10,9 +10,10 @@ from game_solvers import *
 class RandomGameEnvironment(object):
     def __init__(self, game, duels, label='Stochastic Matrix Game (Without Expert Games)'):
         self.game = game    # All agents play the same game
-        self.duels = duels  # a duel is a pair of agents whose performance against each other is measured 
-                            # duel[0]: defender
-                            # duel[1]: attacker
+        # a duel is a pair of agents whose performance against each other is measured
+        self.duels = duels
+        # duel[0]: defender
+        # duel[1]: attacker
         self.label = label  # used for figure title
 
     def reset(self):
@@ -23,11 +24,11 @@ class RandomGameEnvironment(object):
 
     def run(self, episodes=100, timesteps=1000):
         timesteps = self.defender.T
-        rewards = np.zeros((len(self.duels) ,episodes * timesteps))
+        rewards = np.zeros((len(self.duels), episodes * timesteps))
         values = np.zeros_like(rewards)
         expected_rewards = np.zeros_like(rewards)
         for k in range(episodes):
-            ep_value = self.game.sp_value 
+            ep_value = self.game.sp_value
             for t in range(timesteps):
                 for idx, duel in enumerate(self.duels):
                     defe = duel[0].choose()
@@ -59,6 +60,10 @@ class RandomGameEnvironment(object):
         sns.despine()
         plt.show()
 
+    def plot_regret(self, cumuregret):
+        sns.set_style('white')
+        sns.set_context('talk')
+
 
 class ContextualGameEnvironment(object):
     def __init__(self, game, duels, label='Stochastic Matrix Game with Expert Games'):
@@ -82,8 +87,7 @@ class ContextualGameEnvironment(object):
                     defe = duel[0].choose()
                     atta = duel[1].choose()
                     r = self.game.play(defe, atta)
-                    rewards[idx, k*timesteps + t] += r
-
+                    rewards[idx, k*timesteps + t] = r
 
 
 if __name__ == "__main__":
@@ -100,7 +104,7 @@ if __name__ == "__main__":
     #print('the saddle point is {}'.format(RG.sp_value))
     #print('the true game is {}'.format(RG.true_game))
     for t in range(RG.T):
-        #if t % 100 == 0:
+        # if t % 100 == 0:
         #    print('Timestep {} the defender game estimates {}'.format(t, defender.game_estimates))
         #    print('the true game is {}'.format(RG.true_game))
         defe = defender.choose()
@@ -109,15 +113,8 @@ if __name__ == "__main__":
         defender.observe(r, atta)
         attacker.observe(-r, defe)
         rewards[t] += r
-        expected_rewards[t] = np.dot(defender.policy.mu.T, RG.true_game @ attacker.policy.mu)
-    
-    
-    cumuregret = np.cumsum(values  - expected_rewards)
+        expected_rewards[t] = np.dot(
+            defender.policy.mu.T, RG.true_game @ attacker.policy.mu)
+
+    cumuregret = np.cumsum(values - expected_rewards)
     print(cumuregret)
-    
-
-
-    
-    
-        
-
