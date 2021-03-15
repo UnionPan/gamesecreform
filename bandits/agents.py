@@ -156,14 +156,7 @@ class Defender(object):
     def observe(self, reward, action1, action2):
         self.action_attempts[action1] += 1
         self.t += 1
-        if 
         
     @property
     def payoff_estimates(self):
         return self._payoff_estimates
-
-class Attacker(object):
-    def __init__(self, game, policy, prior=0, gamma=None):
-        self.game = game
-        self.n2 = game.n2
-        self.
