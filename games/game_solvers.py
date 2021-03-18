@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import nashpy as nash
 
 # Nash Solver using cvxopt
+
+
 def Nash_solver(M):
     '''
     Using cvxopt linear programming to solve zero sum matrix game
@@ -125,7 +127,7 @@ def Nash_solver1(M):
 
     f, g = eq[0], eq[1]
     #print('the policy is {}'.format(f))
-    if np.isnan(f).any() or  np.isnan(g).any():
+    if np.isnan(f).any() or np.isnan(g).any():
         f = np.random.random(n1)
         f /= np.sum(f)
         g = np.random.random(n2)
@@ -154,5 +156,6 @@ if __name__ == "__main__":
     for t in range(100):
         print(t)
         M = np.random.uniform(size=(10, 10))
+        print(M)
         f, g, v = Nash_solver(M)
         print(f)
