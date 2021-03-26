@@ -197,6 +197,7 @@ class ContextualPlayer(object):
             self.reset()
 
     def estimate(self):
+        #print(self.V)
         self.V += self.ZTZ
         self.Y += self.ZTX
         self.theta_hat = np.linalg.inv(self.V) @ self.Y
@@ -224,7 +225,7 @@ class OmniAttacker(object):
         action = self.policy.choose(self)
         return action
 
-    def observe(self, reward, jt):
+    def observe(self):
         if self.game.t == 0:
             f, self._mu, val = Nash_solver(self.game.true_game)
         else:

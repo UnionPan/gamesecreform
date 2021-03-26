@@ -142,8 +142,9 @@ if __name__ == "__main__":
     """
     This experiment compares regret performance of different players in different game environment
     """
-    EP, T, n1, n2, S, theta = 10, 10, 10, 10, 10, np.random.normal(
-        0.5, 1, size=S)
+    EP, T, n1, n2, S = 15, 200, 10, 10, 10
+    theta = np.random.normal(0.5, 1, size=S)
+    
     # Define a random game and a contextual game
     RG, CG = RandomGame(n1, n2, T), ContextualGame(n1, n2, theta, T)
 
@@ -159,50 +160,78 @@ if __name__ == "__main__":
         Player(RG, ucbminimax), Player(RG, exp3), Player(RG, randplay)
 
     # Define players for contextual game
-    ofuplayer, linplayer, exp3player = ContextualPlayer(CG, ofulinmat, EP), ContextualPlayer(CG, linmat, K),\
+    ofuplayer, linplayer, exp3player = ContextualPlayer(CG, ofulinmat, EP), ContextualPlayer(CG, linmat, EP),\
         AdversarialPlayer(CG, cexp3)
 
     # Define an omniscient attacker
-    attacker = OmniAttacker(CG, policy2)
+    attacker = OmniAttacker(CG)
 
-    rewards = np.zeros((2, EP*CG.T))
+    rewards = np.zeros((2, EP*T))
     values, expected_rewards, regret = np.zeros_like(
         rewards), np.zeros_like(rewards), np.zeros_like(rewards)
     #print('the saddle point is {}'.format(RG.sp_value))
     #print('the true game is {}'.format(RG.true_game))
+    dis = []
     for k in range(EP):
-        print(np.linalg.norm(theta - defender.theta_hat))
-        for t in range(CG.T):
-            values[0, k*CG.T + t] += CG.sp_value[0]
-            defe = defender.choose()
-            atta = attacker.choose()
+        dis.append(np.linalg.norm(theta - ofuplayer.theta_hat))
+        print(np.linalg.norm(theta - ofuplayer.theta_hat))
+        for t in range(T):
+            attacker.observe()
+            values[0, k * T + t] += CG.sp_value[0]
+            values[1, k * T + t] += CG.sp_value[0]
 
-            values[1, k*CG.T + t] += CG.sp_value[0]
-            defe1 = defender1.choose()
-            atta1 = attacker.choose()
+            a0 = ofuplayer.choose()
+            o0 = attacker.choose()
+            r0 = CG.play(a0, o0)
+            
+            a1 = exp3player.choose()
+            o1 = attacker.choose()
+            r1 = CG.play(a1, o1)
 
-            r = CG.play(defe, atta)
-            defender.observe(r, atta)
+            rewards[0, k * T + t] = r0
+            rewards[1, k * T + t] = r1
 
-            r1 = CG.play(defe1, atta1)
-            defender1.observe(r1, atta1)
-
-            attacker.observe(-r, defe)
-            rewards[0, k*CG.T + t] = r
-            rewards[1, k*CG.T + t] = r1
-            expected_rewards[0, k*CG.T + t] = np.dot(
-                defender.policy.mu.T, CG.true_game @ attacker.mu)
-            expected_rewards[1, k*CG.T + t] = np.dot(
-                defender1.policy.mu.T, CG.true_game @ attacker.mu)
-            #print('at episode {} attacker strategy {}'.format(k, attacker.mu))
+            expected_rewards[0, k * T + t] = np.dot(
+                ofuplayer.policy.mu.T, CG.true_game @ attacker.mu)
+            expected_rewards[1, k * T + t] = np.dot(
+                exp3player.policy.mu.T, CG.true_game @ attacker.mu)
+            #print(exp3player.policy.mu)
             CG.update_t()
 
+            #print('at episode {} attacker strategy {}'.format(k, attacker.mu))
+
+            ofuplayer.observe(r0, o0)
+            exp3player.observe(r1, o1)
+            #attacker.observe()
+            
+            #print('the K time for exp3player, ofuplayer and game are {} {} {}'.format(
+            #    exp3player.k, ofuplayer.k, CG.k))
+            #print('the T time for exp3player, ofuplayer and game are {} {} {}'.format(exp3player.t, ofuplayer.t, CG.t))
+            
+    
     regret = values[0] - expected_rewards[0]
     regret1 = values[1] - expected_rewards[1]
     cumuregret = np.cumsum(regret)
     cumuregret1 = np.cumsum(regret1)
-    plt.title('cumulative regret')
-    # plt.plot(cumuregret1)
-    plt.plot(cumuregret)
-    # plt.plot(cumuregret2)
+
+    figureregret = plt.figure(figsize=(10, 3))
+    ax = figureregret.add_subplot(121)
+    ax2 = figureregret.add_subplot(122)
+    ax.set_title('Algortihm comparison')
+    ax.plot(cumuregret, label=r'OFULinMat', color = 'red')
+    ax.plot(cumuregret1, label=r'EXP3', color = 'green')
+    ax.set_ylabel('cumulative regret')
+    ax.set_xlabel('Time Step')
+    ax.set_facecolor(color='#d6d6c2')
+    ax.grid(True)
+    ax.legend()
+    plt.title(r'Distance between $\hat{\theta}$ and $\theta^*$')
+    ax2.plot(dis, label = r'$\Vert \hat{\theta} - \theta^*\Vert_2$', color = 'blue', marker = 'v', markerfacecolor = 'red')
+    ax2.set_ylabel(r'$l_2$ norm')
+    ax2.set_xlabel('episodes')
+    ax2.set_facecolor(color='#d6d6c2')
+    ax2.legend()
+    ax2.grid(True)
     plt.show()
+
+

@@ -134,7 +134,7 @@ class OFULinMat(GamePolicy):
     Only compatible with contextual player
     """
 
-    def __init__(self, B=2):
+    def __init__(self, B=3):
         self._mu = None
         self.B = B
 

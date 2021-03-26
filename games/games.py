@@ -73,8 +73,9 @@ class ContextualGame(RandomGame):
         self.sp_value = val
 
     def play(self, it, jt):
-        eta = np.random.normal(0, 0.25)
+        eta = np.random.normal(0, 0.5)
         reward = self.true_game[it, jt] + eta
+        #self.update_t()
         return reward
 
     def update_t(self):
